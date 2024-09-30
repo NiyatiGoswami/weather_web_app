@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+
+    <style>
+       
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #45295f86;
+            background-image: url("https://img.freepik.com/free-photo/paper-cutout-cloud-with-word-cloud-it_1340-35188.jpg?size=626&ext=jpg&ga=GA1.1.687909580.1727620347&semt=ais_hybrid");
+            background-repeat: repeat-y;
+
+        }
+
+
+        .main-div {
+            width: auto;
+            height: auto;
+            display: grid;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            float: right;
+            padding-right: 50px;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            max-width: 600px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.2);
+            float: right;
+
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input {
+            width: calc(100% - 35px);
+            padding: 10px;
+            border-radius: 7px;
+            border: 1px solid grey;
+
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #weatherInfo,
+        #forecast {
+            margin-top: 20px;
+            display: grid;
+            box-sizing: border-box;
+            border: 1px solid none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.2);
+            background-image: linear-gradient(90deg,white, #ccade5, #ba7df6, #ab4ed0, #5138aa);
+           
+
+        }
+        #forecast{
+            margin-bottom: 50px;
+        }
+
+        footer {
+
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-div">
+        <div class="container">
+            <h1>Weather App</h1>
+            <input type="text" id="cityInput" placeholder="Enter city name" />
+            <button id="getWeatherBtn">Get Weather</button>
+
+        </div>
+        <div id="weatherInfo">Weather Information</div>
+        <div id="forecast">Weather forecast</div>
+    </div>
+    <footer>Developed and designed by Niyati Goswami</footer>
+
+    <script>
+        const apiKey = 'ee0855fe141d5a9dea2389b5d4dc2ad0';
+        const weatherInfo = document.getElementById('weatherInfo');
+        const forecast = document.getElementById('forecast');
+
+        async function fetchWeather(city) {
+            const currentWeatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+            const currentWeather = await currentWeatherResponse.json();
+
+            if (currentWeather.cod === '404') {
+                weatherInfo.innerHTML = `<p>City not found!</p>`;
+                return;
+            }
+
+            const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`);
+            const forecastData = await forecastResponse.json();
+
+            displayCurrentWeather(currentWeather);
+            displayForecast(forecastData);
+        }
+
+        function displayCurrentWeather(data) {
+            const date = new Date(data.dt * 1000);
+            weatherInfo.innerHTML = `
+        <h2>${data.name} (${date.toLocaleString()})</h2>
+        <p>Temperature: ${data.main.temp} °C</p>
+        <p>Humidity: ${data.main.humidity}%</p>
+        <p>Wind Speed: ${data.wind.speed} m/s</p>
+        <p>Condition: ${data.weather[0].description}</p>
+    `;
+        }
+
+        function displayForecast(data) {
+            const forecastDays = data.list.filter(item => item.dt_txt.includes("12:00:00")); // Filter for daily forecasts at noon
+            forecast.innerHTML = `<h3>7-Day Forecast</h3>`;
+
+            forecastDays.slice(0, 7).forEach(item => {
+                const date = new Date(item.dt * 1000);
+                forecast.innerHTML += `
+            <div>
+                <strong>${date.toLocaleDateString()}</strong>: ${item.main.temp} °C, ${item.weather[0].description}
+            </div>
+        `;
+            });
+        }
+
+        document.getElementById('getWeatherBtn').addEventListener('click', () => {
+            const city = document.getElementById('cityInput').value.trim() || 'Delhi';
+            fetchWeather(city);
+        });
+
+        fetchWeather('Delhi');
+
+    </script>
+</body>
+
+</html>
